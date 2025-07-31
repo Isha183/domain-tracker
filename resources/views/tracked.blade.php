@@ -108,6 +108,23 @@
         .btn-3:hover {
             background: darkred;
         }
+
+        .sign-btn {
+            background-color: #4c5eff;
+            color: #fff;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 5px;
+            margin-left: 20px;
+            font-size: 15px
+        }
+
+        .sign-btn:hover {
+            background-color: #2e3edb;
+        }
     </style>
 </head>
 
@@ -118,47 +135,63 @@
             <h3>DOMAIN TRACKER</h3>
             <div class="nav-links">
                 @php $current = (request()->path()); @endphp
+                {{-- <a href="{{ route('dashboard') }}" > Dashboard </a> --}}
                 <a href="/" class="{{ $current == '/' ? 'active' : '' }}">Domain Search</a>
                 <a href="track" class="{{ $current == 'track' ? 'active' : '' }}">Tracked Domains</a>
+                
+                @guest
+                    <!-- If user is NOT logged in -->
+                    <a href="{{ route('login') }}" class="sign-btn" style="color: #fff;">Login</a>
+                @endguest
+
+                @auth
+                    <!-- If user IS logged in -->
+                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="sign-btn">Logout</button>
+                    </form>
+                @endauth
             </div>
+
         </div>
+    
 
-        @if (session('success'))
-            <p style="color: green; text-align:center;">{{ session('success') }}</p>
-        @endif
+    @if (session('success'))
+        <p style="color: green; text-align:center;">{{ session('success') }}</p>
+    @endif
 
-        @if ($tracked->isEmpty())
-            <p style="text-align:center; font-style: italic;">No domain to track</p>
-        @else
-            <table class="tracked-table">
-                <thead>
+    @if ($tracked->isEmpty())
+        <p style="text-align:center; font-style: italic;">No domain to track</p>
+    @else
+        <table class="tracked-table">
+            <thead>
+                <tr>
+                    <th>Tracked Domain</th>
+                    <th>Email</th>
+                    <th>Expiry Date</th>
+                    <th>Notify Before</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($tracked as $item)
                     <tr>
-                        <th>Tracked Domain</th>
-                        <th>Email</th>
-                        <th>Expiry Date</th>
-                        <th>Notify Before</th>
-                        <th>Action</th>
+                        <td>{{ $item->domain }}</td>
+                        <td>{{ $item->email }}</td>
+                        <td>{{ \Carbon\Carbon::parse($item->expiry)->toFormattedDateString() }}</td>
+                        <td>{{ $item->notifyDays }} days</td>
+                        <td>
+                            <form method="POST" action="/untrack/{{ $item->domain }}">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn-3">Remove</button>
+                            </form>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach ($tracked as $item)
-                        <tr>
-                            <td>{{ $item->domain }}</td>
-                            <td>{{ $item->email }}</td>
-                            <td>{{ \Carbon\Carbon::parse($item->expiry)->toFormattedDateString() }}</td>
-                            <td>{{ $item->notifyDays }} days</td>
-                            <td>
-                                <form method="POST" action="/untrack/{{ $item->domain }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-3">Remove</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @endif
+                @endforeach
+            </tbody>
+        </table>
+    @endif
     </div>
 
     <script src="js/app.js"></script>

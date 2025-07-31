@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('tracked', function (Blueprint $table) {
             $table->id();
-            $table->string('domain')->unique();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); 
+            $table->string('domain');
             $table->date('expiry');
             $table->string('email');
             $table->integer('notifyDays');
+            $table->timestamps();
         });
     }
 

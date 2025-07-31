@@ -22,7 +22,7 @@
 
         .container {
             max-width: 100%;
-            width: 84%;
+            width: 91%;
             margin: 100px auto;
             /* top-bottom 100px, center horizontally */
             padding: 2rem 3rem;
@@ -45,6 +45,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2rem;
+            margin-top: 15px
         }
 
         .header h3 {
@@ -101,6 +102,23 @@
 
         .results-table div {
             margin: 0.2rem 0;
+        }
+
+        .sign-btn {
+            background-color: #4c5eff;
+            color: #fff;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 5px;
+            margin-left: 20px;
+            font-size: 15px;
+        }
+
+        .sign-btn:hover {
+            background-color: #2e3edb;
         }
 
         .track-btn {
@@ -177,6 +195,13 @@
         .display {
             display: flex;
         }
+
+        .form-style{
+            margin-bottom: 15px;
+            border:1px solid;
+            border-radius:5px;
+            margin-top:5px
+        }
     </style>
 </head>
 
@@ -185,12 +210,31 @@
         <!-- Header -->
         <div class="header">
             <h3>DOMAIN TRACKER</h3>
+
             <div class="nav-links">
+
                 @php $current = (request()->path()); @endphp
                 <a href="/" class="<?= $current == '/' ? 'active' : '' ?>">Domain Search</a>
                 <a href="track"class="<?= $current == 'tracked' ? 'active' : '' ?>">Tracked Domains</a>
+
+                @guest
+                    <!-- If user is NOT logged in -->
+                    <a href="{{ route('login') }}" class="sign-btn" style="color: #fff;">Login</a>
+                @endguest
+
+                @auth
+
+                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="sign-btn">Logout</button>
+                    </form>
+
+                @endauth
             </div>
+
+
         </div>
+
 
         <!-- Search Section -->
         <div>
@@ -221,9 +265,19 @@
                     @endif
                 </div>
                 @if (isset($domain))
-                    <div style="margin-left: 30%">
-                        <button class="track-btn" onclick="openModal('{{ $domain }}', '{{ $expires }}')">Track Domain</button>
-                    </div>
+                    @guest
+                        <div style="margin-left: 30%">
+                            <button class="track-btn" onclick="window.location.href='{{ route('login') }}'">Track
+                                Domain</button>
+                        </div>
+                    @endguest
+
+                    @auth
+                        <div style="margin-left: 30%">
+                            <button class="track-btn"
+                                onclick="openModal('{{ $domain }}', '{{ $expires }}')">Track Domain</button>
+                        </div>
+                    @endauth
                 @endif
             </div>
         </div>
@@ -238,10 +292,8 @@
                     @csrf
                     <input type="hidden" id="trackDomainHidden" name="domain" value="{{ $domain ?? '' }}">
                     <input type="hidden" id="trackExpiryHidden" name="expiry" value="{{ $expires ?? '' }}">
-                    <input style="margin-bottom: 15px;border:1px solid;border-radius:5px;" type="email" id="email"
-                        name="email" placeholder=" Your Email" required><br>
-                    <input style="margin-bottom: 15px;border:1px solid;border-radius:5px;" type="number"
-                        id="notifyDays" name="days" placeholder=" Notify Before (e.g. 30)" required><br>
+                    <input class="form-style" type="email" id="email" name="email" placeholder=" Your Email" required value="{{ Auth::check() ? Auth::user()->email : '' }}">
+                    <input class="form-style" type="number" id="notifyDays" name="days" placeholder=" Notify Before (e.g. 30)" required><br>
                     <button class="track-btn" type="submit">Start Tracking</button>
                 </form>
             </div>

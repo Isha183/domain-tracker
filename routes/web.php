@@ -1,15 +1,17 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Iodev\Whois\Factory;
 use App\Models\Tracked;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\TrackController;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Mail;
+
 
 
 Route::get('/', function (Request $request) {
@@ -80,20 +82,37 @@ Route::get('/', function (Request $request) {
 });
 
 Route::get('track', function (Request $request) {
-    $tracked = Tracked::all();
+    $tracked = Tracked::where (('user_id'),Auth::id())->get();
     return view('tracked', ['tracked' => $tracked]);
 });
 
 
-
-Route::post('/track', [TrackController::class, 'store'])->name('track.store');
-Route::get('/track', [TrackController::class, 'index'])->name('track.index');
-Route::delete('/untrack/{domain}', [TrackController::class, 'destroy']);
-Route::get('/test-mail', function () {
-    Mail::raw("This is a test email from Laravel to Mailpit!", function ($message) {
-        $message->to('test@example.com')
-                ->subject("Test Email");
-    });
-
-    return 'Mail sent!';
+Route::middleware(['auth'])->group(function () {
+    Route::get('/track', [TrackController::class, 'index'])->middleware('auth')->name('track.index');
+    Route::post('/track', [TrackController::class, 'store'])->name('track.store');
+    Route::delete('/untrack/{domain}', [TrackController::class, 'destroy']);
+    // Route::delete('/track/{domain}', [TrackController::class, 'destroy'])->name('track.destroy');
 });
+
+
+// Route::post('/track', [TrackController::class, 'store'])->name('track.store');
+// Route::get('/track', [TrackController::class, 'index'])->name('track.index');
+// Route::delete('/untrack/{domain}', [TrackController::class, 'destroy']);
+Route::get('/test-mail', function () {
+    Artisan::call('domains:expiry');
+    return 'Mail command manually triggered.';
+});
+
+
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';
