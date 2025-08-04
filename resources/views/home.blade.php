@@ -22,9 +22,8 @@
 
         .container {
             max-width: 100%;
-            width: 91%;
+            width: 94%;
             margin: 100px auto;
-            /* top-bottom 100px, center horizontally */
             padding: 2rem 3rem;
             background-color: #fff;
             box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
@@ -130,7 +129,6 @@
             cursor: pointer;
             font-weight: 500;
             margin-top: 5px;
-            margin-left: auto%;
         }
 
         .track-btn:hover {
@@ -196,11 +194,57 @@
             display: flex;
         }
 
-        .form-style{
+        .hide-display {
+            display: flex;
+        }
+
+        .form-style {
             margin-bottom: 15px;
-            border:1px solid;
-            border-radius:5px;
-            margin-top:5px
+            border: 1px solid;
+            border-radius: 5px;
+            margin-top: 5px
+        }
+
+        .search-history {
+            text-align: right;
+            margin-left: 27%
+        }
+
+        .btn-margin {
+            margin-left: 32%;
+        }
+
+        @media (max-width:900px) {
+
+            .container {
+                max-width: 100%;
+                width: 89%;
+                margin: 100px auto;
+                padding: 2rem 3rem;
+                background-color: #fff;
+                box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+                border-radius: 10px;
+            }
+
+            .tracked-domains-section {
+                background-color: #fff;
+                border-radius: 10px;
+                padding: 2rem;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            }
+
+            .search-history {
+                display: none;
+            }
+
+            .btn-margin {
+                margin-left: 50%;
+            }
+
+            .hide-display {
+                display: inline-block;
+
+            }
         }
     </style>
 </head>
@@ -247,7 +291,10 @@
 
         <!-- Results Section -->
         <div class="results-section">
-            <h2><strong>Search Results</strong></h2>
+            <div class="display">
+                <h2><strong>Search Results</strong></h2>
+                <h2 class="search-history" style="margin-left: 1250px;"><strong> Search History</strong></h2>
+            </div>
             <div class="line"></div>
             <div class="display">
                 <div>
@@ -266,42 +313,87 @@
                 </div>
                 @if (isset($domain))
                     @guest
-                        <div style="margin-left: 30%">
+                        <div class="btn-margin">
                             <button class="track-btn" onclick="window.location.href='{{ route('login') }}'">Track
                                 Domain</button>
                         </div>
                     @endguest
 
                     @auth
-                        <div style="margin-left: 30%">
+                        <div class="btn-margin">
                             <button class="track-btn"
                                 onclick="openModal('{{ $domain }}', '{{ $expires }}')">Track Domain</button>
                         </div>
                     @endauth
+
                 @endif
-            </div>
-        </div>
+
+                @if (isset($history))
+                    <div id="history" class="search-history" style="margin-left: {{ isset($domain) ? '28%' : '71%' }};">
+
+                        @if ($history->isEmpty())
+                            <p style="color: grey; font-style: italic;">No search history</p>
+                        @else
+                            @foreach ($history as $item)
+                                <p>
+                                    <strong>{{ $item->domain }}</strong> -
+                                    {{ $item->searched_at->timezone('Asia/Kolkata')->format('d M Y, h:i A') }}
+                                </p>
+                            @endforeach
+                        @endif
+                    </div>
+                @endif
 
 
-        <div id="trackModal" class="modal" action="{{ route('track.store') }}" method="POST">
-            @csrf
-            <div class="modal-content">
-                <span class="close" onclick="closeModal()">&times;</span>
-                <h2 style="margin-bottom: 15px">Track Domain Expiry</h2>
-                <form id="trackForm" action="{{ route('track.store') }}" method="POST">
-                    @csrf
-                    <input type="hidden" id="trackDomainHidden" name="domain" value="{{ $domain ?? '' }}">
-                    <input type="hidden" id="trackExpiryHidden" name="expiry" value="{{ $expires ?? '' }}">
-                    <input class="form-style" type="email" id="email" name="email" placeholder=" Your Email" required value="{{ Auth::check() ? Auth::user()->email : '' }}">
-                    <input class="form-style" type="number" id="notifyDays" name="days" placeholder=" Notify Before (e.g. 30)" required><br>
-                    <button class="track-btn" type="submit">Start Tracking</button>
-                </form>
             </div>
+
+            
         </div>
     </div>
 
+
+    <div id="trackModal" class="modal" action="{{ route('track.store') }}" method="POST">
+        @csrf
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 style="margin-bottom: 15px">Track Domain Expiry</h2>
+            <form id="trackForm" action="{{ route('track.store') }}" method="POST">
+                @csrf
+                <input type="hidden" id="trackDomainHidden" name="domain" value="{{ $domain ?? '' }}">
+                <input type="hidden" id="trackExpiryHidden" name="expiry" value="{{ $expires ?? '' }}">
+                <input class="form-style" type="email" id="email" name="email" placeholder=" Your Email"
+                    required value="{{ Auth::check() ? Auth::user()->email : '' }}">
+                <input class="form-style" type="number" id="notifyDays" name="days"
+                    placeholder=" Notify Before (e.g. 30)" required><br>
+                <button class="track-btn" type="submit">Start Tracking</button>
+            </form>
+        </div>
+    </div>
+    </div>
+
+    @php
+        $isVerified = auth()->check() && auth()->user()->hasVerifiedEmail();
+        $trackedCount = auth()->check() ? auth()->user()->tracked()->count() : 0;
+        $limit = env('UNVERIFIED_TRACK_LIMIT', 3);
+    @endphp
+
     <script>
+        const isVerified = @json($isVerified);
+        const trackedCount = @json($trackedCount);
+        const limit = @json($limit);
+
+
         function openModal(domain, expiry) {
+
+            if (!isVerified && trackedCount >= limit) {
+                alert("You need to verify your email to track more than 3 domains.");
+                return;
+            }
+
+            // if (!isVerified) {
+            // alert("You need to verify your email to track more than 3 domains.");
+            // return;
+            // }
 
             document.getElementById('trackDomainHidden').value = domain;
             document.getElementById('trackExpiryHidden').value = expiry;

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -9,4 +10,9 @@ class Tracked extends Model
     protected $table = 'tracked';
 
     protected $fillable = ['domain', 'expiry', 'email', 'notifyDays', 'user_id'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

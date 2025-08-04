@@ -14,6 +14,17 @@ class TrackController extends Controller
 {
     public function store(Request $request)
     {
+    $user = auth()->user();
+
+    if (!$user ||!$user->hasVerifiedEmail()) {
+        $limit=env('UNVERIFIED_TRACK_LIMIT',3);
+        $trackedCount = $user->tracked()->count();
+
+        if ($trackedCount >= $limit) {
+            return redirect()->back()->with('error', 'Verify your email to track more than 3 domains.');
+        }
+    }
+
         $request->validate([
             'domain' => 'required|string',
             'email' => 'required|email',

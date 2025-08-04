@@ -20,8 +20,8 @@
 
         .container {
             max-width: 100%;
-            width: 91%;
-            margin: 100px auto;
+            
+            margin: 100px 50px;
             /* top-bottom 100px, center horizontally */
             padding: 2rem 3rem;
             background-color: #fff;
@@ -92,7 +92,7 @@
             width: 100%;
             max-width: 400px;
             text-align: center;
-            margin-left: 120px
+            margin: 0px auto;
         }
 
         .login-box h2 {
@@ -179,7 +179,7 @@
                 <input type="email" name="email" placeholder="Email" required autofocus>
                 <input type="password" name="password" placeholder="Password" required>
 
-                <button type="submit">Log In</button>
+                <button type="submit" action="{{ route('verification.send')}}">Log In</button>
             </form>
 
             <div class="signup-link">

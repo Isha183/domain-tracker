@@ -1,4 +1,84 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Domain Tracker Application
+
+A web-based Domain Tracker built using **Laravel** and **JavaScript** that allows users to:
+- Search WHOIS information for domains
+- Track domains with email notifications
+- View recent search history
+- Manage tracked domains (requires login)
+- Email verification system for full access
+
+## Features
+
+- WHOIS domain lookup using `io-developer/php-whois`
+- Caching of WHOIS data for faster repeated lookups
+- Laravel Breeze is used for login/register
+- Non-logged-in users can search, but cannot track
+- Authenticated domain tracking with expiry reminders
+- Search history
+- Responsive frontend with Laravel Blade + CSS
+- Email verification using Mailpit (local dev)
+- Limit of 3 tracked domains until email is verified
+
+## Tech Stack
+
+- Backend: Laravel 10+, PHP 8.1+
+- Frontend: Blade, JavaScript, CSS
+- WHOIS Parser: [`io-developer/php-whois`](https://github.com/io-developer/php-whois)
+- Auth: Laravel Breeze
+- Database: MySQL
+- Mail Testing: Mailpit
+
+
+### 1. Install dependencies
+
+git clone https://github.com/Isha183/domain-tracker
+cd domain-tracker
+composer install
+npm install
+npm run dev
+
+### 2. Create environment file
+
+cp .env.example .env
+php artisan key:generate
+
+### 3. Set up your .env
+
+APP_NAME="Domain Tracker"
+APP_URL=http://localhost:8000
+
+DB_DATABASE=your_db
+DB_USERNAME=your_user
+DB_PASSWORD=your_pass
+
+MAIL_MAILER=smtp
+MAIL_HOST=127.0.0.1
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS=tracker@example.com
+MAIL_FROM_NAME="${APP_NAME}"
+
+### 4. Run migrations
+
+php artisan migrate
+
+### 5. Start development server
+
+php artisan serve
+
+### 6. Start Mailpit
+
+docker run -d -p 8025:8025 -p 1025:1025 --name mailpit axllent/mailpit
+
+
+
+
+
+
+
+<!-- <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
 <a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
@@ -58,4 +138,4 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT). -->
