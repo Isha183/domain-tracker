@@ -12,6 +12,12 @@
     <title>Domain Tracker</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+
+
         body {
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -22,7 +28,7 @@
 
         .container {
             max-width: 100%;
-            width: 94%;
+            width: 93%;
             margin: 100px auto;
             padding: 2rem 3rem;
             background-color: #fff;
@@ -53,11 +59,13 @@
         }
 
         .domain-form {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 2rem;
+            flex-wrap: nowrap;
+            flex-shrink: 0;
+            gap: 0;
+            width: fit-content;
+            margin: auto;
         }
+
 
         #domain-input {
             width: 400px;
@@ -113,7 +121,6 @@
             font-weight: 500;
             margin-top: 5px;
             margin-left: 20px;
-            font-size: 15px;
         }
 
         .sign-btn:hover {
@@ -192,6 +199,8 @@
 
         .display {
             display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
         }
 
         .hide-display {
@@ -205,45 +214,139 @@
             margin-top: 5px
         }
 
-        .search-history {
-            text-align: right;
-            margin-left: 27%
+        .hamburger {
+            display: none;
+            font-size: 26px;
+            cursor: pointer;
+            user-select: none;
+            color: #000000;
         }
 
-        .btn-margin {
-            margin-left: 32%;
-        }
-
-        @media (max-width:900px) {
-
-            .container {
-                max-width: 100%;
-                width: 89%;
-                margin: 100px auto;
-                padding: 2rem 3rem;
-                background-color: #fff;
-                box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
-                border-radius: 10px;
+        @media (max-width: 900px) {
+            .nav-container {
+                position: relative;
             }
 
-            .tracked-domains-section {
+            .hamburger {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 40px;
+                right: 0;
                 background-color: #fff;
-                border-radius: 10px;
-                padding: 2rem;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+                border-radius: 6px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                padding: 1rem;
+                z-index: 1000;
+            }
+
+            .nav-links a,
+            .nav-links form {
+                margin: 0.5rem 0;
+                display: block;
+            }
+
+            .nav-links.show {
+                display: flex;
+            }
+
+             .sign-btn{
+                margin-left: 0px;
             }
 
             .search-history {
                 display: none;
             }
 
-            .btn-margin {
-                margin-left: 50%;
-            }
-
             .hide-display {
                 display: inline-block;
 
+            }
+        }
+
+        @media (max-width: 768px) {
+
+            .container {
+                width: 87%;
+            }
+
+
+
+            .display {
+                flex-direction: column;
+            }
+
+            .search-history {
+                margin-left: 0;
+                margin-top: 1rem;
+                text-align: left;
+            }
+
+            .btn-margin {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+
+            .modal-content {
+                width: 90%;
+                padding: 2rem 1rem;
+            }
+
+            a,
+            .sign-btn {
+                margin-left: 0;
+                margin-right: 10px;
+                margin-top: 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            .container {
+                width: 75%;
+            }
+
+            .domain-form {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            #domain-input {
+                width: 100%;
+                border-radius: 30px;
+            }
+
+            .search-btn {
+                margin-top: 10px;
+                width: 100%;
+                border-radius: 30px;
+            }
+
+            h2,
+            h3 {
+                font-size: 1rem;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+
+            .results-table {
+                grid-template-columns: 1fr;
+            }
+
+            .form-style {
+                width: 100%;
+            }
+
+            .sign-btn,
+            .track-btn {
+                width: 100%;
+                text-align: center;
             }
         }
     </style>
@@ -255,25 +358,25 @@
         <div class="header">
             <h3>DOMAIN TRACKER</h3>
 
-            <div class="nav-links">
+            <div class="nav-container">
+                <div class="hamburger" onclick="toggleMenu()">☰</div>
 
-                @php $current = (request()->path()); @endphp
-                <a href="/" class="<?= $current == '/' ? 'active' : '' ?>">Domain Search</a>
-                <a href="track"class="<?= $current == 'tracked' ? 'active' : '' ?>">Tracked Domains</a>
+                <div class="nav-links" id="navLinks">
+                    @php $current = (request()->path()); @endphp
+                    <a href="/" class="{{ $current == '/' ? 'active' : '' }}">Domain Search</a>
+                    <a href="track" class="{{ $current == 'track' ? 'active' : '' }}">Tracked Domains</a>
 
-                @guest
-                    <!-- If user is NOT logged in -->
-                    <a href="{{ route('login') }}" class="sign-btn" style="color: #fff;">Login</a>
-                @endguest
+                    @guest
+                        <a href="{{ route('login') }}" class="sign-btn" style="color: #fff;">Login</a>
+                    @endguest
 
-                @auth
-
-                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                        @csrf
-                        <button type="submit" class="sign-btn">Logout</button>
-                    </form>
-
-                @endauth
+                    @auth
+                        <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                            @csrf
+                            <button type="submit" class="sign-btn">Logout</button>
+                        </form>
+                    @endauth
+                </div>
             </div>
 
 
@@ -291,9 +394,9 @@
 
         <!-- Results Section -->
         <div class="results-section">
-            <div class="display">
+            <div class="display" class="display" style="justify-content: space-between;margin-top:10px;">
                 <h2><strong>Search Results</strong></h2>
-                <h2 class="search-history" style="margin-left: 1250px;"><strong> Search History</strong></h2>
+                <h2 class="search-history"><strong> Search History</strong></h2>
             </div>
             <div class="line"></div>
             <div class="display">
@@ -325,11 +428,10 @@
                                 onclick="openModal('{{ $domain }}', '{{ $expires }}')">Track Domain</button>
                         </div>
                     @endauth
-
                 @endif
 
                 @if (isset($history))
-                    <div id="history" class="search-history" style="margin-left: {{ isset($domain) ? '28%' : '71%' }};">
+                    <div id="history" class="search-history">
 
                         @if ($history->isEmpty())
                             <p style="color: grey; font-style: italic;">No search history</p>
@@ -347,7 +449,7 @@
 
             </div>
 
-            
+
         </div>
     </div>
 
@@ -378,6 +480,13 @@
     @endphp
 
     <script>
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('show');
+        }
+
+
+
         const isVerified = @json($isVerified);
         const trackedCount = @json($trackedCount);
         const limit = @json($limit);

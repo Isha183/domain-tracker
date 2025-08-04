@@ -20,7 +20,7 @@
 
         .container {
             max-width: 100%;
-            
+
             margin: 100px 50px;
             /* top-bottom 100px, center horizontally */
             padding: 2rem 3rem;
@@ -146,6 +146,81 @@
         .login-box .signup-link a:hover {
             text-decoration: underline;
         }
+
+        .hamburger {
+            display: none;
+            font-size: 26px;
+            cursor: pointer;
+            user-select: none;
+            color: #000000;
+        }
+
+        @media (max-width: 900px) {
+            .nav-container {
+                position: relative;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 40px;
+                right: 0;
+                background-color: #fff;
+                border-radius: 6px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                padding: 1rem;
+                z-index: 1000;
+            }
+
+            .nav-links a,
+            .nav-links form {
+                margin: 0.5rem 0;
+                display: block;
+            }
+
+            .nav-links.show {
+                display: flex;
+            }
+
+            .sign-btn {
+                margin-left: 0px;
+            }
+
+        }
+
+        @media (max-width: 480px) {
+
+            h3 {
+                font-size: 24px;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+
+            .form-style {
+                width: 100%;
+            }
+
+            .sign-btn,
+            .track-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+
+            a,
+            .sign-btn {
+                margin-left: 0;
+                margin-right: 10px;
+                margin-top: 5px;
+            }
+        }
     </style>
 </head>
 
@@ -155,11 +230,25 @@
         <!-- Header -->
         <div class="header">
             <h3>DOMAIN TRACKER</h3>
-            <div class="nav-links">
-                @php $current = (request()->path()); @endphp
-                <a href="/" class="<?= $current == '/' ? 'active' : '' ?>">Domain Search</a>
-                <a href="track"class="<?= $current == 'tracked' ? 'active' : '' ?>">Tracked Domains</a>
-                <a href="login" class="sign-btn" style="color: #fff">Log In</a>
+            <div class="nav-container">
+                <div class="hamburger" onclick="toggleMenu()">☰</div>
+
+                <div class="nav-links" id="navLinks">
+                    @php $current = (request()->path()); @endphp
+                    <a href="/" class="{{ $current == '/' ? 'active' : '' }}">Domain Search</a>
+                    <a href="track" class="{{ $current == 'track' ? 'active' : '' }}">Tracked Domains</a>
+
+                    @guest
+                        <a href="{{ route('login') }}" class="sign-btn" style="color: #fff;">Login</a>
+                    @endguest
+
+                    @auth
+                        <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                            @csrf
+                            <button type="submit" class="sign-btn">Logout</button>
+                        </form>
+                    @endauth
+                </div>
             </div>
         </div>
 
@@ -232,7 +321,7 @@
                 </div>
 
                 <div class="flex items-center justify-end mt-4 signup-link">
-                    
+
                     <button type="submit" style="margin-top: 5px;">
                         {{ __('Register') }}
                     </button>
@@ -244,6 +333,12 @@
                 </div>
         </div>
     </div>
+    <script>
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('show');
+        }
+    </script>
 </body>
 
 </html>
